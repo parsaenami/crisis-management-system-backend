@@ -40,12 +40,14 @@ class User(db.Model):
     lat = sa.Column(sa.String, nullable=True, default="")
     long = sa.Column(sa.String, nullable=True, default="")
     otp = sa.Column(sa.String, nullable=False, default="")
+    otp_exp = sa.Column(sa.String, nullable=True, default="")
     token = sa.Column(sa.String, nullable=False, default="")
+    token_exp = sa.Column(sa.String, nullable=True, default="")
     created_at = sa.Column(sa.String, nullable=False, default=str(int(round(time.time() * 1000))))
 
     requests = sa.orm.relationship(
         "Request",
-        back_populates="disaster",
+        back_populates="user",
     )
 
     @hybrid_property
@@ -84,7 +86,6 @@ class Need(db.Model):
 
     category = sa.orm.relationship(
         "NeedCategory",
-        cascade="all, delete-orphan",
         uselist=False,
         back_populates="needs",
     )
@@ -123,19 +124,16 @@ class Request(db.Model):
 
     user = sa.orm.relationship(
         "User",
-        cascade="all, delete-orphan",
         uselist=False,
         back_populates="requests",
     )
     need = sa.orm.relationship(
         "Need",
-        cascade="all, delete-orphan",
         uselist=False,
         back_populates="requests",
     )
     disaster = sa.orm.relationship(
         "DisasterCategory",
-        cascade="all, delete-orphan",
         uselist=False,
         back_populates="requests",
     )

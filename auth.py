@@ -4,19 +4,15 @@ import jwt
 from flask import request, jsonify
 
 
-def check_for_token(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.args.get('token')
-        print(args)
-        print(kwargs)
-        # if not token:
-        #     return jsonify({'message': 'Token missing'}), 403
-        #
-        # try:
-        #     data = jwt.decode(token, app.config['SECRET_KEY'])
-        # except:
-        #     return jsonify({'message': 'Invalid token'}), 403
-        return f(*args, **kwargs)
+def check_for_token(func):
+    @wraps(func)
+    def decorated(*args):
+        # token = request.headers.get('Authentication')
+        token = request.headers.get('fuck')
+
+        if token:
+            return func(*args, foo=token)
+        else:
+            return jsonify({"msg": "not allowed"})
 
     return decorated
