@@ -267,7 +267,7 @@ def verify(phone, otp):
         # generate response
         resp = jsonify({
             'msg': f"{user.fullname} عزیز، با موفقیت وارد شدید",
-            'token': 'Bearer ' + token,
+            'token': token,
         }), 200
 
         # close session
@@ -404,6 +404,7 @@ def get_needs():
 
 @cross_origin()
 @app.route('/profile/<user_id>', methods=["GET", "PUT"])
+@check_for_token(app.config['SECRET_KEY'])
 def profile(user_id):
     resp = jsonify({'error': "خطای سرور"}), 500
 

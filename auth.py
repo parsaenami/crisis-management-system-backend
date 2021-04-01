@@ -12,12 +12,16 @@ def check_for_token(jwt_key):
             token = request.headers.get('Authentication')
 
             if token:
-                decoded_token = jwt.decode(token, jwt_key, "HS256")
-                if (decoded_token.get("exp") - (round(time.time())) * 1000 > 0
-                        and int(decoded_token.get("user").get("id")) == int(kwargs.get("user_id"))):
-                    return func(*args, **kwargs)
-                else:
-                    return jsonify({"msg": "not allowed"}), 401
+                try:
+                    token = token.split('Bearer ')[1]
+                    decoded_token = jwt.decode(token, jwt_key, "HS256")
+                    if (decoded_token.get("exp") - (round(time.time())) * 1000 > 0
+                            and int(decoded_token.get("user").get("id")) == int(kwargs.get("user_id"))):
+                        return func(*args, **kwargs)
+                    else:
+                        return jsonify({"msg": "not allowed"}), 401
+                except Exception as e:
+                    return jsonify({"msg": "invalid token"}), 401
             else:
                 return jsonify({"msg": "not allowed"}), 401
 
