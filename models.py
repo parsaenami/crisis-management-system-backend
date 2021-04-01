@@ -19,6 +19,13 @@ request_statuses = {
     5: "ارسال شده",
     6: "دریافت شده",
 }
+urgent_mappings = {
+    1: "خیلی کم",
+    2: "کم",
+    3: "متوسط",
+    4: "زیاد",
+    5: "خیلی زیاد",
+}
 
 
 def obj_to_dict(obj):
@@ -68,6 +75,7 @@ class NeedCategory(db.Model):
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     title = sa.Column(sa.String, nullable=False)
+    en_title = sa.Column(sa.String, nullable=True)
 
     needs = sa.orm.relationship(
         "Need",
@@ -100,6 +108,7 @@ class DisasterCategory(db.Model):
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     title = sa.Column(sa.String, nullable=False)
+    en_title = sa.Column(sa.String, nullable=True)
 
     requests = sa.orm.relationship(
         "Request",
@@ -115,6 +124,8 @@ class Request(db.Model):
     amount = sa.Column(sa.Integer, nullable=False)
     urgent = sa.Column(sa.Integer, nullable=False, default=3)
     status = sa.Column(sa.Integer, nullable=False, default=0)
+    lat = sa.Column(sa.String, nullable=True, default="")
+    long = sa.Column(sa.String, nullable=True, default="")
     created_at = sa.Column(sa.String, nullable=False, default=str(int(round(time.time() * 1000))))
     done_at = sa.Column(sa.String, nullable=True)
 
@@ -144,3 +155,14 @@ class Request(db.Model):
             return 'نامشخص'
         else:
             return request_statuses[self.status]
+
+    @hybrid_property
+    def urgent_pretty(self):
+        return urgent_mappings[self.urgent]
+
+    @hybrid_property
+    def location(self):
+        return {
+            "lat": self.lat,
+            "long": self.long,
+        }
