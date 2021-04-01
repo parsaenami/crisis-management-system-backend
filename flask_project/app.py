@@ -3,33 +3,30 @@ import random
 
 import jwt
 
-from auth import check_for_token
-from models import *
+from flask_project.auth import check_for_token
+from flask_project.models import *
 from flask import Flask, request, jsonify, make_response
-from flask_script import Manager
-from flask_bcrypt import Bcrypt
-from flask_alembic import Alembic
-from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS, cross_origin
 from flasgger import Swagger, swag_from
-from sqlalchemy import create_engine, func, inspect, or_, and_
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import create_engine, or_, and_
+from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = "Access-Control-Allow-Methods: *"
 app.config['DEBUG'] = True
 app.config['CSRF_ENABLED'] = True
-app.config['SECRET_KEY'] = 'verySecretKey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost/crisis_project'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config["SWAGGER"] = {
-#     "specs": [
-#         {"version": "1.0", "title": "PROJECT API", "endpoint": "api", "route": "/api"}
-#     ]
-# }
-#
-# Swagger(app)
+app.config["SWAGGER"] = {
+    "specs": [
+        {"version": "1.0", "title": "PROJECT API", "endpoint": "api", "route": "/api"}
+    ]
+}
+
+Swagger(app)
 
 engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
 db_session = (sessionmaker(bind=engine))
@@ -458,5 +455,35 @@ def profile(user_id):
         return resp
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+@cross_origin()
+@app.route('/request/<req_id>', methods=["PUT"])
+@check_for_token(app.config['SECRET_KEY'])
+def update_request(req_id):
+    resp = jsonify({'error': "خطای سرور"}), 500
+
+    try:
+        req_id = int(req_id)
+        req = my_session.query(Request).filter(Request.id == req_id).first()
+
+        # get information
+        if "status" in request.json.keys() and request.json["status"] is not None:
+            req.status = request.json["status"]
+
+        # save changes to database
+        my_session.commit()
+
+        # generate response
+        resp = jsonify({
+            'msg': "تغییرات وضعیت درخواست با موفقیت اعمال شد",
+        }), 200
+
+        # close session
+        my_session.close()
+
+    except Exception as e:
+        print(e)
+        resp = jsonify({'error': "مشکلی پیش آمده است، مجدداً تلاش کنید"}), 500
+
+    finally:
+        my_session.close()
+        return resp

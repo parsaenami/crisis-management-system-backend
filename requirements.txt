@@ -22,6 +22,7 @@ Mako==1.1.4
 MarkupSafe==1.1.1
 migrate==0.3.8
 mistune==0.8.4
+persiantools==2.1.1
 psycopg2==2.8.6
 pycparser==2.20
 PyJWT==2.0.1

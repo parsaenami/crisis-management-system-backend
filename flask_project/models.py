@@ -1,12 +1,10 @@
 import time
-from datetime import datetime
 import sqlalchemy as sa
 
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import scoped_session, object_session, backref
+from sqlalchemy.orm import scoped_session
 
 db = SQLAlchemy()
 
